@@ -34,7 +34,7 @@ required.
 The `<-` (read as "gets") is the primary assignment operator in R. If you want
 to set the value of `x` to `1`, you would run `x <- 1`. This is directional, 
 so `1 -> x` is also valid (useful if you just typed a long line and forgot
-                           to assign it, but probably not good practice!). You can use `=` for assignment
+to assign it, but probably not good practice!). You can use `=` for assignment
 (and indeed need to when you are passing function arguments) but for whatever
 reason that is not standard practice. 
 
@@ -86,4 +86,22 @@ the data object we will be using the most.
 potentially a different type. These come in handy when doing functional 
 programming tasks. We'll cover lists when they come up in context. 
 
+# The Packages
+I am going to cover using R, mostly focusing on data importation, manipulation
+and visualiation. I'll also cover the different data types in R, extensions of 
+these data types and, time permitting, some functional programming in R. Next
+week Aaron Miller will cover machine learning in R. 
+
+Most of the examples in this book will use a package called `tidyverse`. The 
+tidyverse is a collection of tools to help with the data importation and 
+manipulation challenges in R. Specifically, we will discuss the following 
+packages this week
+
+* `dplyr`
+* `ggplot2`
+* `tidyr`
+* `readr`
+* `stringr`
+* `purrr`
+* `broom`
 
