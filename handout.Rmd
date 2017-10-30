@@ -18,5 +18,72 @@ the `tidyverse` inside R. You can do this by running
 the [RStudio IDE](https://www.rstudio.com/) will make your R sessions much 
 easier to manage. 
 
+# Overview
+
+# The R Langague
+I am not going to spend a lot of time R as a language. I'll cover some syntax 
+as we reach it. I'll cover just a few brief terms and conventions here. 
+
+*Packages* are contributed extensions to the R language to enable specific 
+tasks or analyses. If you are familiar with Python, these are like libraries or
+gems in Ruby. Most of the time, there is a contributed version on CRAN that you
+can easily install with `install.packages("<package name>")` in your R session. 
+It will download and install the requested package as well as any dependencies
+required. 
+
+The `<-` (read as "gets") is the primary assignment operator in R. If you want
+to set the value of `x` to `1`, you would run `x <- 1`. This is directional, 
+so `1 -> x` is also valid (useful if you just typed a long line and forgot
+                           to assign it, but probably not good practice!). You can use `=` for assignment
+(and indeed need to when you are passing function arguments) but for whatever
+reason that is not standard practice. 
+
+There are three atomic data types in R. 
+
+* "numeric" - this stores floating point and integer values. Typically, it will
+store the value as a double precision floating point but integer can be 
+forced if desired. 
+* "factor" - this looks like a string but it isn't! Factors are catogorical 
+variables with discrete levels (e.g., male vs female, dog vs cat vs mouse). 
+In R, they are actually stored internally as a series of integers and R converts
+these integers to labels (e.g., 1 = male, 2 = female) when it shows output. 
+This can be confusing because they look like strings but aren't - it makes sense
+in R's standard statistical use-case but will almost certainly make everyone 
+groan at least once. 
+* "character" - this is actually the string-type in R. Most of the tools I'll
+discuss today don't convert characters to factors but historically R has 
+cocered characters into factors when reading data into a session. 
+
+There are a set of higher level data types in R:
+
+* "vector" - a vector is 1-D collection of values, all of the same data type. 
+A "vector" in R and a "vector" in math mean approximately the same thing. 
+For instance `c(1, 2, 3)` is a vector as is `c("A", "B", "C")` (`c()` is the 
+function used to contruct a vector, `c` standards for "combine" or 
+"concatentation"). R will automatically convert a vector with mixed types into
+the most strict atomic data type that can hold all of the values in the vector.
+For instance, `c(1, 2, "A")` will become a string of character values. 
+
+* "matrix" - a matrix is a 2-D collection of values. This is the same as a
+"matrix" in math. Like a vector, it can only hold one atomic data type. 
+
+* "array" - an array is a generalization of a matrix to any number of 
+dimensions. This can be useful to hold data where you have clear "slices"
+(e.g., intensity by x and y at several difference values of t). Again, this can
+only hold one atomic data type. 
+
+* "data.frame" - a data.frame is the primary data storage object in base R. It
+is a collection of vectors, each displayed as a column, and is analogus to 
+a table or spreadsheet. The columns can be of different types. 
+
+* "tibble" - a tibble (a corruption of the word "table" which was abberviated as
+"tbl" in the output) is an extension of the data.frame provided by the `tibble`
+package in the `tidyverse`. The main advantages of a tibble are a better print
+method and it makes it a little harder to get yourself in trouble. This is 
+the data object we will be using the most. 
+
+* "list" - a list is a collection of any R data types with each element being
+potentially a different type. These come in handy when doing functional 
+programming tasks. We'll cover lists when they come up in context. 
 
 
