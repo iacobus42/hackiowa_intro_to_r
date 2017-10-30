@@ -1,0 +1,22 @@
+---
+title: "Introduction to R"
+author: "Jacob Simmering"
+date: "October 30, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+You will need to have a version of R installed. It can be downloaded for your
+system at [CRAN](https://cran.r-project.org/). Also you will want to install
+the `tidyverse` inside R. You can do this by running 
+`install.packages("tidyverse")` in an R session. Finally, while not required, 
+the [RStudio IDE](https://www.rstudio.com/) will make your R sessions much 
+easier to manage. 
+
+
+
