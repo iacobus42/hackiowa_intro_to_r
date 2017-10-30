@@ -305,7 +305,60 @@ spread(stocks_wide, stock, closing_price)
 These are handy little tools to keep in your tool kit. Moving from wide-to-long
 happens more than you'd expect. 
 
+## The `dplyr` Verbs
 
+`dplyr` is a workhorse package to manipulating and summarizing data. The most
+exciting thing about `dplyr` is that the syntax and code is the same for 
+working on an in-memory dataset (like we do here) or a SQL database. `dbplyr`
+is a package that extends `dplyr` and converts your R code into SQL queries 
+and passes them off to the RDBMS. This is really cool when you are working with
+large data sets and makes the transition between in-memory data manipulation and
+on-disk data manipuilation seamless. It is also very easy to use, which doesn't
+hurt at all!
 
+In general, `dplyr` is simply a collection of six verbs (or five verbs and one
+adverb) which will do about 99% of all data manipulation tasks you might want to
+do. The verbs are 
 
+* `select()`
+* `filter()`
+* `mutate()`
+* `summarize()`
+* `arrange()`
+* `group_by()` (this might actually be an adverb)
 
+We'll go through what each function does and how to use it using the 
+`nycflights13` data sets as an example. 
+
+### `select()`
+Select does what it says - it selects things. You give it the name of a data
+object and then a comma seperated list of variables and it returns the data 
+object with only those variables. 
+
+Let's start with the `airports` table
+```{r vars_in_flights}
+airports
+```
+
+We might only want the `air_time` (flight time) and `distance` in our dataset. 
+The rest of the variables are just taking up space. We can use `select()` to
+do that for us
+
+```{r select_1}
+select(airports, faa, lat, lon)
+```
+
+We can also exclude specific variables by putting a `-` in front of the variable
+name
+
+```{r select_2}
+select(airports, -faa)
+```
+
+We can also use a set of helper functions to select the desired variables:
+
+* `starts_with(match)` - returns any variables that start with the value passed
+as `match`
+* `ends_with(match)` - returns any variables that ends with the value passed as
+`match`
+* `contains(match)` - returns any variables that contain the value `match`
