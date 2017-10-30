@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
 # Setup
@@ -14,13 +15,14 @@ knitr::opts_chunk$set(echo = TRUE)
 You will need to have a version of R installed. It can be downloaded for your
 system at [CRAN](https://cran.r-project.org/). Also you will want to install
 the `tidyverse` inside R. You can do this by running 
-`install.packages("tidyverse")` in an R session. Finally, while not required, 
-the [RStudio IDE](https://www.rstudio.com/) will make your R sessions much 
+`install.packages("tidyverse")` in an R session. 
+Finally, while not required, the [RStudio IDE](https://www.rstudio.com/) will 
+make your R sessions much 
 easier to manage. 
 
 # Overview
 
-# The R Langague
+## The R Langague
 I am not going to spend a lot of time R as a language. I'll cover some syntax 
 as we reach it. I'll cover just a few brief terms and conventions here. 
 
@@ -29,7 +31,9 @@ tasks or analyses. If you are familiar with Python, these are like libraries or
 gems in Ruby. Most of the time, there is a contributed version on CRAN that you
 can easily install with `install.packages("<package name>")` in your R session. 
 It will download and install the requested package as well as any dependencies
-required. 
+required. Once a package is installed, you can load it into your session with 
+`library(<package name>)`. Quotes are required to install but optional when 
+loading the library. 
 
 The `<-` (read as "gets") is the primary assignment operator in R. If you want
 to set the value of `x` to `1`, you would run `x <- 1`. This is directional, 
@@ -37,6 +41,12 @@ so `1 -> x` is also valid (useful if you just typed a long line and forgot
 to assign it, but probably not good practice!). You can use `=` for assignment
 (and indeed need to when you are passing function arguments) but for whatever
 reason that is not standard practice. 
+
+The operator `%>%` is added when you load the `tidyverse` package and is known
+as the "pipe" operator. You can understand read this as "then". This is used
+to string together a series of operations into one group while splitting across
+lines for readability and avoiding nesting of parenthesis. We'll discuss this 
+later in context. 
 
 There are three atomic data types in R. 
 
@@ -86,7 +96,7 @@ the data object we will be using the most.
 potentially a different type. These come in handy when doing functional 
 programming tasks. We'll cover lists when they come up in context. 
 
-# The Packages
+## The Packages
 I am going to cover using R, mostly focusing on data importation, manipulation
 and visualiation. I'll also cover the different data types in R, extensions of 
 these data types and, time permitting, some functional programming in R. Next
@@ -104,4 +114,198 @@ packages this week
 * `stringr`
 * `purrr`
 * `broom`
+
+## The Data 
+We will be using the data sets in the `nycflights13` package. However, instead
+of using the package we are going to read in the data directly. We'll discuss
+reading in the data next, but first a brief overview of the data. The data is
+a summary of the on-time data for all flights that left NYC in 2013 and 
+includes "metadata" such as airline, airport the plane was flying to, weather 
+and the plane. The data was collected and compiled into the R package by 
+Hadley Wickham in 2017. 
+
+There are five tables. They are
+
+* airlines
+* airports
+* flights
+* planes
+* weather
+
+The titles should be pretty straightword. 
+
+# Data Import
+Start a new R script in RStudio and add the following to the top of the script
+
+```{r eval=FALSE}
+library(tidyverse)
+```
+
+And run the line (click on the "Run" icon or put your cursor on the line and 
+press crtl-enter (Windows, Linux) or cmd-enter (OS X)). This should send your
+code to the console to execute. 
+
+If you see the message
+`Error in library(tidyverse) : there is no package called 'tidyverse'` it means
+that the `tidyverse` package is not installed. In the console, run 
+`install.packages("tidyverse")` to install it and then re-run the line. 
+
+If you see the following:
+
+```
+Loading tidyverse: ggplot2
+Loading tidyverse: tibble
+Loading tidyverse: tidyr
+Loading tidyverse: readr
+Loading tidyverse: purrr
+Loading tidyverse: dplyr
+Conflicts with tidy packages ---------------------------------------------------
+filter(): dplyr, stats
+lag():    dplyr, stats
+```
+ 
+It means that you have successfully loaded the `tidyverse` and related packages
+into your R session. The `Conflicts with tidy packages` section lists places 
+where there are two functions with the same name being loaded into the global 
+namespace. By default, the last function loaded will be the default. For 
+instance, if I run the function `lag()` it will use the `lag()` as defined by 
+the `dplyr` package since I loaded that after the `stats` package was loaded. 
+If I want to access the `stats` version of `lag()`, I can explicitly identify 
+the namespace using the format `namespace::function()` or `stats::lag()` in 
+this case. 
+
+We are going to use the `readr` package to load our data. There are specialized
+functions in the `readr` package to read tab-seperated files, fixed-with files, 
+delimited files and comma-seperated files. We are going to focus on csv's, but
+you can read in pretty much any plain-text file with `readr`. 
+
+The main function we want to use is `read_csv()`. If you enter `?read_csv` in
+the console, you should be able to see the Help package for the `read_csv()` 
+function. You'll see the description that: "read_csv() and read_tsv() are 
+special cases of the general read_delim(). They're useful for reading the most 
+common types of flat file data, comma separated values and tab separated values,
+respectively. read_csv2() uses ; for separators, instead of ,. This is common in
+European countries which use , as the decimal separator." Looking under the 
+Usage entry, we see 
+
+```
+read_csv(file, col_names = TRUE, col_types = NULL,
+  locale = default_locale(), na = c("", "NA"), quoted_na = TRUE,
+  quote = "\"", comment = "", trim_ws = TRUE, skip = 0, n_max = Inf,
+  guess_max = min(1000, n_max), progress = show_progress())
+```
+
+That is a lot of arguments to manage and the arguments section goes through
+them in detail. We won't need to change many of these from defaults. In general, 
+you only need to worry about setting `file` and, occasionally, `col_types`. 
+
+I've provided all of the data we are going to use in the `data` directory of
+this repo. Let's one of the files and print it: 
+
+```{r data_load_1}
+airlines <- read_csv("data/airlines.csv")
+airlines
+```
+
+The section that reads
+
+```
+## Parsed with column specification:
+## cols(
+##   carrier = col_character(),
+##   name = col_character()
+## )
+```
+
+tells us about the data, specifically, the variables the parser found and their
+types. In this case, there are two variables, carrier and name, both of which
+are characters. 
+
+When we print out the object, we see that it is a tibble with 2 columns and 
+16 rows. `carrier` appears to be a short 2-letter abbbervation for an airline
+and `name` is the full name of the airline company. 
+
+We can do this with the rest of the files as well:
+
+```{r data_load_2}
+airports <- read_csv("data/airports.csv")
+planes <- read_csv("data/planes.csv")
+flights <- read_csv("data/flights.csv")
+weather <- read_csv("data/weather.csv")
+```
+
+We again see a list of all the variables in the data set and their types. You'll
+notice that even more complicated types, such as datetime, were recognized and 
+parsed.
+
+The other data import functions in `readr` will produce similar results. 
+
+# Data Manipulation
+
+## A Note on Tidy Data
+
+I'm going to take a brief minute here to discuss "tidy" data. The idea behind
+tidy data is similar to normalization in databases and indeed tidy data can be
+thought of as a re-casting of 3rd Normal Form in a statistical language. 
+Specifically, 
+
+1. Each variable must have its own column;
+2. Each observation must have its own row;
+3. Each value must have its own cell. 
+
+If the data is stored as such, it makes manipulating it and producing summaries,
+aggregations and other data transformations easier. It also means the data is
+stored consistently and do you don't have to re-learn the data structure every 
+project. 
+
+The tools in the tidyverse are designed around the idea of tidy data and 
+integrate neatly with the concept. If you have tidy data, use of these tools 
+will feel natural and intutive. 
+
+All of the data sets that we have are tidy, but if they aren't (or you just 
+neeed to do it) the functions `gather()` and `spread()` from the `tidyr` 
+package (part of the tidyverse) are useful. `gather()` takes "wide" data and
+makes it long. For instance, 
+
+```{r spread_and_gather}
+stocks <- tibble(
+  time = as.Date('2009-01-01') + 0:9,
+  X = rnorm(10, 0, 1), # just generates some random numbers
+  Y = rnorm(10, 0, 2), # just generates some random numbers
+  Z = rnorm(10, 0, 4) # just generates some random numbers
+)
+stocks
+```
+
+is the closing price of 3 stocks "X", "Y" and "Z" at the end of each day 
+from 2009-1-1 to 2009-1-10. If we wanted them to be long such that there 
+was 3 rows for each time, a column that indicates the stock and a column that
+indicates the closing price, we would use `gather()`. `gather()` typically takes 
+4 arguments: `data` is the name of the tibble to perform the operation on,
+`key` is the name to use for the column that will become the key, `value`
+is the name to use for the column that will hold the value then a comma 
+seperated list of variables to include (or prefix with a `-` sign to exclude).
+For the `stocks` example
+
+```{r gather_1}
+stocks_wide <- gather(stocks, stock, closing_price, -time)
+stocks_wide
+```
+
+and we can convert back to wide using `spread()`. This reverses the action of
+`gather()`. The first argument should be the name of the tibble to act on 
+(in this case `stocks_wide`), the second should be the name of the column that
+contains the values to use as the new column names (`stocks`) and the third
+should contain the values used to fill the new cells (`closing_price`). 
+
+```{r}
+spread(stocks_wide, stock, closing_price)
+```
+
+These are handy little tools to keep in your tool kit. Moving from wide-to-long
+happens more than you'd expect. 
+
+
+
+
 
