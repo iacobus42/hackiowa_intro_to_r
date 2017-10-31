@@ -407,3 +407,24 @@ filter(flights, (dep_time - sched_dep_time) >= 5, (dep_time - sched_dep_time) <=
 which returns zero rows (no flight can leave both 5 minutes before and 5 minutes
 after the scheduled time). 
 
+## `mutate()`
+`mutate` is used to add new variables to a tibble. As with the other verbs 
+so far, the first argument is the name of the tibble to mutate followed by a
+comma seperated list of variables and the values to assign to those variables. 
+
+The `flights` table contains information about the flight time and distance 
+but does not include the speed. We could combine the air time and the distance
+to estimate speed. Let's do that:
+
+```{r mutate_1}
+flights <- mutate(flights, speed = distance / (air_time / 60))
+```
+
+And now if we view flights, we'll see a new variable called speed:
+
+```{r mutate_2}
+select(flights, distance, air_time, speed)
+```
+
+
+
