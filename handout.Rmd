@@ -407,6 +407,13 @@ filter(flights, (dep_time - sched_dep_time) >= 5, (dep_time - sched_dep_time) <=
 which returns zero rows (no flight can leave both 5 minutes before and 5 minutes
 after the scheduled time). 
 
+Filter also works to when using functions in the logical statement. We could 
+find the furtherest flight on May 27th using 
+
+```{r filter_6}
+filter(flights, month == 5, day == 27, distance == max(distance, na.rm = TRUE))
+```
+
 ## `mutate()`
 `mutate` is used to add new variables to a tibble. As with the other verbs 
 so far, the first argument is the name of the tibble to mutate followed by a
@@ -465,4 +472,158 @@ arrange(flights, dep_time)
 and we get a bunch of flights that left at 00:01. 
 
 * `group_by()`
+The major value of `dplyr` comes with the `group_by` function when combined with 
+the prior verbs. `group_by` modifies the prior verbs so that they operate on a 
+group basis. For instance, if we wanted the mean arrival delay by airline, 
+
+```{r group_by_1}
+flights <- group_by(flights, carrier)
+```
+
+You'll notice that `flights` doesn't look much different if you print it
+
+```{r group_by_2}
+flights
+```
+
+but in the console you'll see the new line that says:
+
+```
+# Groups:   carrier [16]
+```
+
+this indicates that `flights` is now a grouped tibble and the groups are 
+given by the value of `carrier`. If we apply one of the earlier functions 
+to `flights` now, such as the summarize function, we'll get a value returned
+for each of the groups. 
+
+```{r group_by_3}
+summarize(flights, mean_arrival_delay = mean(arr_delay, na.rm = TRUE))
+```
+
+We can also group by several variables. For instance, maybe flights to one 
+airport are more delayed than others and there is also a carrier effect. We
+would want to group both by carrier and by destintation airport:
+
+```{r group_by_4}
+flights <- group_by(flights, carrier, dest)
+summarize(flights, mean_arrival_delay = mean(arr_delay, na.rm = TRUE))
+```
+
+Earlier in the `filter()` examples, we used `filter()` to find the furthest
+distance a flight covered. We could do the same trick with `filter()` and
+`group_by()` to find the furtherest flight on each carrier.
+
+```{r group_by_5}
+flights <- group_by(flights, carrier)
+filter(flights, distance == max(distance))
+```
+
+Why is this 12,793 rows and not 16? Multiple flights for the same carrier have 
+the same distance (e.g., the same route appears several times). 
+
+# The Pipe Operator `%>%`
+This example is motivated/adapted from R for Data Science. 
+
+Imagine the following nursery rythm:
+
+Little bunny Foo Foo
+
+Went hopping through the forest
+
+Scooping up the field mice
+
+And bopping them on the head
+
+We could code this as:
+
+```
+foo_foo <- little_bunny()
+foo_foo_1 <- hop(foo_foo, through = forest)
+foo_foo_2 <- scoop(foo_foo_1, up = field_mice)
+foo_foo_3 <- bop(foo_foo_2, on = head)
+```
+
+but that is hard to debug, write and understand. The intermediate steps don't
+have clear value, they clutter your workspace and invite error with making
+the suffix unique. 
+
+You could re-write it so that you simply overwrite the orgininal object in 
+each step:
+
+```
+foo_foo <- little_bunny()
+foo_foo <- hop(foo_foo, through = forest)
+foo_foo <- scoop(foo_foo, up = field_mice)
+foo_foo <- bop(foo_foo, on = head)
+```
+
+but this is still hard to read and debug. How do you know when something went
+wrong with `foo_foo` is the output is just something is wrong with `foo_foo`?
+
+You could do a lot of nesting of function calls:
+
+```
+foo_foo <- little_bunny()
+bop(
+  scoop(
+    hop(foo_foo, through = forest),
+    up = field_mice
+  ), 
+  on = head
+)
+```
+
+but this is confusing because the argument `on` belongs to `bop()` but is 
+5 lines from the opening of `bop()`. 
+
+This rapidly becomes a problem - imagine a typical data summarization step that
+involves filtering the data, making a transformation, grouping the data, 
+making the summary measure and arranging by some value. You'd end up with 
+
+```{r pipe_1}
+arrange(
+  summarize(
+    group_by(
+      mutate(
+        filter(flights, origin == "JFK"),
+        speed = distance / (air_time / 60)), 
+      carrier),
+    mean_speed = mean(speed, na.rm = TRUE)),
+  carrier, mean_speed)
+```
+
+And that makes about zero sense. It runs but it is confusing to code and 
+confusing to understand. Instead, it would be amazing to do this naturally with
+a "then" type ordering. This is what the `%>%` (pipe) does. 
+
+Simply put a pipe takes the results of a function and uses them as the first 
+argument of the following function. We could re-write the story about Foo Foo 
+using pipes as 
+
+```
+foo_foo %>%
+  hop(through = forest) %>%
+  scoop(up = field_mouse) %>%
+  bop(on = head)
+```
+
+This is a logical ordering, easy to understand, keeps functions and their 
+arguments tightly linked and follows naturally. 
+
+The data summarization example above can be recast simply as
+
+```{r pipe_2}
+flights %>%
+  filter(origin == "JFK") %>%
+  mutate(speed = distance / (air_time / 60)) %>%
+  group_by(carrier) %>%
+  summarize(mean_speed = mean(speed, na.rm = TRUE)) %>%
+  arrange(carrier, mean_speed)
+```
+
+It gives the same results but is much easier to understand. Since nearly all 
+data analysis and manipulations are a linear flow from unstructed/messy data 
+to rectangular data to tidy data to transformations to models, the concept of 
+"then" as a glue between the steps comes naturally. 
 
