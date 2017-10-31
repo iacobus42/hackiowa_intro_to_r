@@ -411,6 +411,7 @@ after the scheduled time).
 `mutate` is used to add new variables to a tibble. As with the other verbs 
 so far, the first argument is the name of the tibble to mutate followed by a
 comma seperated list of variables and the values to assign to those variables. 
+The assignment is done in the form `variable_name = value`. 
 
 The `flights` table contains information about the flight time and distance 
 but does not include the speed. We could combine the air time and the distance
@@ -426,5 +427,32 @@ And now if we view flights, we'll see a new variable called speed:
 select(flights, distance, air_time, speed)
 ```
 
+Mulitple variables can be constructed inside a single `mutate()` call:
 
+```{r}
+flights <- mutate(flights,
+       dep_delay = dep_time - sched_dep_time,
+       arr_delay = arr_time - sched_arr_time)
+select(flights, dep_delay, arr_delay)
+```
+
+## `summarize()`
+`summarize()` takes as the first argument, you guessed it, the data object and
+the following arguments are in the same manner as with mutate. While `mutate()`
+must returns an $n$ row column, `summarize()` must return a 1 row column that
+is a summary measure (e.g., mean, sd, median). If we wanted to get an idea of
+the mean and standard devation of the arrival delays, we would use 
+
+```{r summarize_1}
+# na.rm = TRUE just means ignore rows where there is a missing value
+summarize(flights, 
+          mean_arrival_delay = mean(arr_delay, na.rm = TRUE),
+          sd_arrival_delay = sd(arr_delay, na.rm = TRUE))
+```
+
+The average flight arrives 6.9 minutes late with a standard deviation of 44.6 
+minutes. 
+
+* `arrange()`
+* `group_by()`
 
