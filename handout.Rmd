@@ -627,3 +627,31 @@ data analysis and manipulations are a linear flow from unstructed/messy data
 to rectangular data to tidy data to transformations to models, the concept of 
 "then" as a glue between the steps comes naturally. 
 
+# Joins
+
+Typically, data exists in several tables and we would like to merge the data
+together into a single table for our analysis. `dplyr` supports a number of 
+joins. They are:
+
+* `inner_join(x, y)` returns the rows from that exist in both `x` and `y` with
+all the values from `x` and `y`
+* `left_join(x, y)` returns all the rows in that exist in `x` with the 
+values from `x` and `y`. If rows exist in `x` but don't have a match in 
+`y` have their values set to missing (`NA`)
+* `right_join(x, y)` is the same as `left_join()` but keeps all the rows in 
+`y` instead of `x`
+* `full_join(x, y)` keeps all the rows and values that occur in either `x` or 
+`y`
+* `semi_join(x, y)` returns all the rows in `x` that have a matching row in `y`
+but does not include any variables from `y`
+* `anti_join(x, y)` returns all the rows in `x` that do not have a matching row 
+in `y`
+
+By default, `*_join()` will use all the variables common to `x` and `y` when
+performing the join. This behavior can be over-ridden by setting the `by` 
+argument, see the Arguments section for `inner_join()` for details on how to 
+do this (hint: `?inner_join`). 
+
+
+
+
