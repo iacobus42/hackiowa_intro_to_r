@@ -362,3 +362,48 @@ as `match`
 * `ends_with(match)` - returns any variables that ends with the value passed as
 `match`
 * `contains(match)` - returns any variables that contain the value `match`
+
+### `filter()`
+
+`filter()` filters things. It takes as a first argument the name of the data
+object (a tibble or data.frame) to filter and then a series of comma seperated
+expressions that evaluate to logical TRUE/FALSE statements about a given row. 
+
+The `flights` table is a good place to try this:
+
+```{r filter_1}
+flights
+```
+
+Suppose we wanted to find it any flight from NYC went to Des Moines airport
+in 2013. The expression would test if `dest == "DSM"`. So 
+
+```{r filter_2}
+filter(flights, dest == "DSM")
+```
+
+Suppose we wanted multiple filtering rules, we can string them together with
+commas and `filter()` understands that as "AND". So `filter(data, x, y)` means
+return rows in data where both x AND y are true. 
+
+```{r filter_3}
+filter(flights, year == 2013, month == 1, day == 1)
+```
+
+You can join using "OR" as well. In R, the logical opereator OR is expressed as
+`|`. For instance, if I want to find flights that left either more than 5 
+minutes before or 5 minutes after their scheduled time, I would run
+
+```{r filter_4}
+filter(flights, (dep_time - sched_dep_time) >= 5 | (dep_time - sched_dep_time) <= -5)
+```
+
+which differs from seperating with a comma
+
+```{r filter_5}
+filter(flights, (dep_time - sched_dep_time) >= 5, (dep_time - sched_dep_time) <= -5)
+```
+
+which returns zero rows (no flight can leave both 5 minutes before and 5 minutes
+after the scheduled time). 
+
