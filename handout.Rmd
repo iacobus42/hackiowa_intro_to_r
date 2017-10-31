@@ -652,6 +652,23 @@ performing the join. This behavior can be over-ridden by setting the `by`
 argument, see the Arguments section for `inner_join()` for details on how to 
 do this (hint: `?inner_join`). 
 
+We might want to take the data from the `flights` table and merge in the 
+information about the type and number of engines for each plane. The `flights`
+table contains the `tailnum` of the plane that made the flight. The `planes`
+table contains more information about that plane. We want to join `flights`
+and `planes`, compute average speed and then group that by engine type and
+the number of engines and calculate the mean. 
 
+```{r joins_1}
+mean_speed_by_engine_type_and_number <- flights %>%
+  ungroup() %>%
+  select(tailnum, air_time, distance) %>%
+  inner_join(planes) %>%
+  select(air_time, distance, engines, engine) %>%
+  group_by(engine_type = engine, engine_number = engines) %>%
+  summarize(mean_speed = mean(distance / (air_time / 60), 
+                              na.rm = TRUE))
+mean_speed_by_engine_type_and_number
+```
 
 
