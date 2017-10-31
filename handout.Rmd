@@ -454,5 +454,15 @@ The average flight arrives 6.9 minutes late with a standard deviation of 44.6
 minutes. 
 
 * `arrange()`
+`arrange()` is used to order data by a variable in the data. For instance, 
+if we wanted to order the `flights` table by the the depture time, we would
+run
+
+```{r arrange_1}
+arrange(flights, dep_time)
+```
+
+and we get a bunch of flights that left at 00:01. 
+
 * `group_by()`
 
