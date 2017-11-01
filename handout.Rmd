@@ -54,7 +54,7 @@ There are three atomic data types in R.
 * "numeric" - this stores floating point and integer values. Typically, it will
 store the value as a double precision floating point but integer can be 
 forced if desired. 
-* "factor" - this looks like a string but it isn't! Factors are catogorical 
+* "factor" - this looks like a string but it isn't! Factors are categorical 
 variables with discrete levels (e.g., male vs female, dog vs cat vs mouse). 
 In R, they are actually stored internally as a series of integers and R converts
 these integers to labels (e.g., 1 = male, 2 = female) when it shows output. 
@@ -63,15 +63,15 @@ in R's standard statistical use-case but will almost certainly make everyone
 groan at least once. 
 * "character" - this is actually the string-type in R. Most of the tools I'll
 discuss today don't convert characters to factors but historically R has 
-cocered characters into factors when reading data into a session. 
+coerced characters into factors when reading data into a session. 
 
 There are a set of higher level data types in R:
 
 * "vector" - a vector is 1-D collection of values, all of the same data type. 
 A "vector" in R and a "vector" in math mean approximately the same thing. 
 For instance `c(1, 2, 3)` is a vector as is `c("A", "B", "C")` (`c()` is the 
-function used to contruct a vector, `c` standards for "combine" or 
-"concatentation"). R will automatically convert a vector with mixed types into
+function used to construct a vector, `c` standards for "combine" or 
+"concatenation"). R will automatically convert a vector with mixed types into
 the most strict atomic data type that can hold all of the values in the vector.
 For instance, `c(1, 2, "A")` will become a string of character values. 
 
@@ -84,10 +84,10 @@ dimensions. This can be useful to hold data where you have clear "slices"
 only hold one atomic data type. 
 
 * "data.frame" - a data.frame is the primary data storage object in base R. It
-is a collection of vectors, each displayed as a column, and is analogus to 
+is a collection of vectors, each displayed as a column, and is analogous to 
 a table or spreadsheet. The columns can be of different types. 
 
-* "tibble" - a tibble (a corruption of the word "table" which was abberviated as
+* "tibble" - a tibble (a corruption of the word "table" which was abbreviated as
 "tbl" in the output) is an extension of the data.frame provided by the `tibble`
 package in the `tidyverse`. The main advantages of a tibble are a better print
 method and it makes it a little harder to get yourself in trouble. For more 
@@ -103,7 +103,7 @@ as they will be used next week.
 
 ## The Packages We'll Use Today
 I am going to cover using R, mostly focusing on data importation, manipulation
-and visualiation. I'll also cover the different data types in R, extensions of 
+and visualization. I'll also cover the different data types in R, extensions of 
 these data types and, time permitting, some functional programming in R. Next
 week Aaron Miller will cover machine learning in R. 
 
@@ -142,13 +142,13 @@ A sample schema showing how they are joined (taken from R4DS)
 ![Schema for Flights Data](http://r4ds.had.co.nz/diagrams/relational-nycflights.png)
 
 # Data Science Workflow
-The tidyverse suggests a workflow of data exploration and analysis depicited 
+The tidyverse suggests a workflow of data exploration and analysis depicted 
 in the figure below (taken from R for Data Science)
 
 ![Idealized Data Science Workflow](http://r4ds.had.co.nz/diagrams/data-science-explore.png)
 
 The ideal is that you import your (potentially unstructured/messy) data, 
-tidy it (convert it into a cleaned, retangular format, more on tidy data later)
+tidy it (convert it into a cleaned, rectangular format, more on tidy data later)
 and then enter the analysis/exploration cycle. Here you start by transforming 
 your data, visualizing relationships, modeling those relationships and then 
 potentially returning to the transformation and repeating the process. 
@@ -164,7 +164,7 @@ format
 * `dplyr` covers many, if not most, transformations of the data you might want 
 to do
 * `ggplot2` is a powerful and visually appealing tool for producing 
-visualzations of your data and any relationships within
+visualizations of your data and any relationships within
 * `modelr`, `purrr` and the base R functions `lm()` and `glm()` form the bulk of
 the modeling stage
 * `knitr` provides an easy way to embedded R code and results inside Markdown 
@@ -220,8 +220,8 @@ the namespace using the format `namespace::function()` or `stats::lag()` in
 this case. 
 
 We are going to use the `readr` package to load our data. There are specialized
-functions in the `readr` package to read tab-seperated files, fixed-with files, 
-delimited files and comma-seperated files. We are going to focus on csv's, but
+functions in the `readr` package to read tab-separated files, fixed-with files, 
+delimited files and comma-separated files. We are going to focus on csv's, but
 you can read in pretty much any plain-text file with `readr`. 
 
 The main function we want to use is `read_csv()`. If you enter `?read_csv` in
@@ -267,7 +267,7 @@ types. In this case, there are two variables, carrier and name, both of which
 are characters. 
 
 When we print out the object, we see that it is a tibble with 2 columns and 
-16 rows. `carrier` appears to be a short 2-letter abbbervation for an airline
+16 rows. `carrier` appears to be a short 2-letter abbreviation for an airline
 and `name` is the full name of the airline company. 
 
 We can do this with the rest of the files as well:
@@ -305,10 +305,10 @@ project.
 
 The tools in the tidyverse are designed around the idea of tidy data and 
 integrate neatly with the concept. If you have tidy data, use of these tools 
-will feel natural and intutive. 
+will feel natural and intuitive. 
 
 All of the data sets that we have are tidy, but if they aren't (or you just 
-neeed to do it) the functions `gather()` and `spread()` from the `tidyr` 
+need to do it) the functions `gather()` and `spread()` from the `tidyr` 
 package (part of the tidyverse) are useful. `gather()` takes "wide" data and
 makes it long. For instance, 
 
@@ -329,7 +329,7 @@ indicates the closing price, we would use `gather()`. `gather()` typically takes
 4 arguments: `data` is the name of the tibble to perform the operation on,
 `key` is the name to use for the column that will become the key, `value`
 is the name to use for the column that will hold the value then a comma 
-seperated list of variables to include (or prefix with a `-` sign to exclude).
+separated list of variables to include (or prefix with a `-` sign to exclude).
 For the `stocks` example
 
 ```{r gather_1}
@@ -361,7 +361,7 @@ working on an in-memory dataset (like we do here) or a SQL database. `dbplyr`
 is a package that extends `dplyr` and converts your R code into SQL queries 
 and passes them off to the RDBMS. This is really cool when you are working with
 large data sets and makes the transition between in-memory data manipulation and
-on-disk data manipuilation seamless. It is also very easy to use, which doesn't
+on-disk data manipulation seamless. It is also very easy to use, which doesn't
 hurt at all!
 
 In general, `dplyr` is simply a collection of six verbs (or five verbs and one
@@ -380,7 +380,7 @@ We'll go through what each function does and how to use it using the
 
 ### `select()`
 Select does what it says - it selects things. You give it the name of a data
-object and then a comma seperated list of variables and it returns the data 
+object and then a comma separated list of variables and it returns the data 
 object with only those variables. 
 
 Let's start with the `airports` table
@@ -417,7 +417,7 @@ as `match`
 ### `filter()`
 
 `filter()` filters things. It takes as a first argument the name of the data
-object (a tibble or data.frame) to filter and then a series of comma seperated
+object (a tibble or data.frame) to filter and then a series of comma separated
 expressions that evaluate to logical TRUE/FALSE statements about a given row. 
 
 The `flights` table is a good place to try this:
@@ -441,7 +441,7 @@ return rows in data where both x AND y are true.
 filter(flights, year == 2013, month == 1, day == 1)
 ```
 
-You can join using "OR" as well. In R, the logical opereator OR is expressed as
+You can join using "OR" as well. In R, the logical operator OR is expressed as
 `|`. For instance, if I want to find flights that left either more than 5 
 minutes before or 5 minutes after their scheduled time, I would run
 
@@ -449,7 +449,7 @@ minutes before or 5 minutes after their scheduled time, I would run
 filter(flights, (dep_time - sched_dep_time) >= 5 | (dep_time - sched_dep_time) <= -5)
 ```
 
-which differs from seperating with a comma
+which differs from separating with a comma
 
 ```{r filter_5}
 filter(flights, (dep_time - sched_dep_time) >= 5, (dep_time - sched_dep_time) <= -5)
@@ -459,7 +459,7 @@ which returns zero rows (no flight can leave both 5 minutes before and 5 minutes
 after the scheduled time). 
 
 Filter also works to when using functions in the logical statement. We could 
-find the furtherest flight on May 27th using 
+find the longest distance flight on May 27th using 
 
 ```{r filter_6}
 filter(flights, month == 5, day == 27, distance == max(distance, na.rm = TRUE))
@@ -480,7 +480,7 @@ Find all flights that:
 ### `mutate()`
 `mutate` is used to add new variables to a tibble. As with the other verbs 
 so far, the first argument is the name of the tibble to mutate followed by a
-comma seperated list of variables and the values to assign to those variables. 
+comma separated list of variables and the values to assign to those variables. 
 The assignment is done in the form `variable_name = value`. 
 
 The `flights` table contains information about the flight time and distance 
@@ -497,7 +497,7 @@ And now if we view flights, we'll see a new variable called speed:
 select(flights, distance, air_time, speed)
 ```
 
-Mulitple variables can be constructed inside a single `mutate()` call:
+Multiple variables can be constructed inside a single `mutate()` call:
 
 ```{r}
 flights <- mutate(flights,
@@ -511,7 +511,7 @@ select(flights, dep_delay, arr_delay)
 the following arguments are in the same manner as with mutate. While `mutate()`
 must returns an $n$ row column, `summarize()` must return a 1 row column that
 is a summary measure (e.g., mean, sd, median). If we wanted to get an idea of
-the mean and standard devation of the arrival delays, we would use 
+the mean and standard deviation of the arrival delays, we would use 
 
 ```{r summarize_1}
 # na.rm = TRUE just means ignore rows where there is a missing value
@@ -525,7 +525,7 @@ minutes.
 
 ### `arrange()`
 `arrange()` is used to order data by a variable in the data. For instance, 
-if we wanted to order the `flights` table by the the depture time, we would
+if we wanted to order the `flights` table by the the departure time, we would
 run
 
 ```{r arrange_1}
@@ -566,7 +566,7 @@ summarize(flights, mean_arrival_delay = mean(arr_delay, na.rm = TRUE))
 
 We can also group by several variables. For instance, maybe flights to one 
 airport are more delayed than others and there is also a carrier effect. We
-would want to group both by carrier and by destintation airport:
+would want to group both by carrier and by destination airport:
 
 ```{r group_by_4}
 flights <- group_by(flights, carrier, dest)
@@ -575,7 +575,7 @@ summarize(flights, mean_arrival_delay = mean(arr_delay, na.rm = TRUE))
 
 Earlier in the `filter()` examples, we used `filter()` to find the furthest
 distance a flight covered. We could do the same trick with `filter()` and
-`group_by()` to find the furtherest flight on each carrier.
+`group_by()` to find the longest-distance flight on each carrier.
 
 ```{r group_by_5}
 flights <- group_by(flights, carrier)
@@ -588,7 +588,7 @@ the same distance (e.g., the same route appears several times).
 ## The Pipe Operator `%>%`
 This example is motivated/adapted from R for Data Science. 
 
-Imagine the following nursery rythm:
+Imagine the following nursery rhythm:
 
 Little bunny Foo Foo
 
@@ -611,7 +611,7 @@ but that is hard to debug, write and understand. The intermediate steps don't
 have clear value, they clutter your workspace and invite error with making
 the suffix unique. 
 
-You could re-write it so that you simply overwrite the orgininal object in 
+You could re-write it so that you simply overwrite the original object in 
 each step:
 
 ```
@@ -686,7 +686,7 @@ flights %>%
 ```
 
 It gives the same results but is much easier to understand. Since nearly all 
-data analysis and manipulations are a linear flow from unstructed/messy data 
+data analysis and manipulations are a linear flow from unstructured/messy data 
 to rectangular data to tidy data to transformations to models, the concept of 
 "then" as a glue between the steps comes naturally. 
 
@@ -750,7 +750,7 @@ for the plot (e.g., what values should be plotted along the x and y, is there
 some grouping in the data that you want to show with color or line or point
 type). 
 
-After initalizing the `ggplot` object with that call, you append `geom`s to 
+After initializing the `ggplot` object with that call, you append `geom`s to 
 the plot with the `+` operator. For instance, the `geom_point()` produces a 
 scatter plot of the data set to `x` and `y` in the `mapping` of the 
 call to `ggplot`. As an example,
@@ -815,8 +815,8 @@ type of smoother to use (e.g., `lm` for linear model for a line-of-best-fit).
 You might think that the data is describing a circle - 360 and 0 degrees are
 the same direction - and wouldn't it be nice if the data was shown with 
 the x variable forming a circle? We can convert the data to be shown in a 
-polar coordinate system instead of an cartesian system by adding `coord_polar()`
-to the statemenet that builds the model:
+polar coordinate system instead of an Cartesian system by adding `coord_polar()`
+to the statement that builds the model:
 
 ```{r vis_5}
 flights %>%
@@ -895,9 +895,9 @@ either leave this as the default `gaussian()` for classic linear models or
 * data (third) - the data set to use to estimate the model
 
 For example, we might want to know how the arrival delay is affected by the 
-deptuature delay. We would regress the arrival delay in `flights` on the 
-depature delay to decompose the arrival delay into the portion that is caused
-by depature delays and the portion caused by other factors. The data set 
+departure delay. We would regress the arrival delay in `flights` on the 
+departure delay to decompose the arrival delay into the portion that is caused
+by departure delays and the portion caused by other factors. The data set 
 we would want to use is `flights`, the model would be `arr_delay ~ dep_delay`
 and we can leave the family as `guassian()`. The model building step would 
 look like:
@@ -920,7 +920,7 @@ summary(model)
 
 The `summary(model)` says that a flight that leaves on time arrives about 6
 minutes earlier that scheduled and that for each minute that the flight is 
-delayed compared to the scheduled depature time there is a 1.02 minute delay 
+delayed compared to the scheduled departure time there is a 1.02 minute delay 
 on arrival. 
 
 # Functional Programming (Probably Won't Get to)
@@ -991,7 +991,7 @@ model_data$model[[1]]
 ```
 
 We can use the `broom` package to extract the estimated coefficients of the 
-model and see if the different airlines have different sensitivies to the 
+model and see if the different airlines have different sensitivities to the 
 number of flights out of the airport:
 
 ```{r}
