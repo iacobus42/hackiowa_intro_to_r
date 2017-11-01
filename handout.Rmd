@@ -736,10 +736,127 @@ mean_speed_by_engine_type_and_number
 How might you find the average and median arrival delay by carrier? 
 
 # Visualization
+We are going to focus on using `ggplot2` for our plots. The basic use is to
+call the function `ggplot(data, mapping = aes())` where data is some 
+data object (e.g., tibble) and the mapping contains some of the aesthetics 
+for the plot (e.g., what values should be plotted along the x and y, is there
+some grouping in the data that you want to show with color or line or point
+type). 
 
+After initalizing the `ggplot` object with that call, you append `geom`s to 
+the plot with the `+` operator. For instance, the `geom_point()` produces a 
+scatter plot of the data set to `x` and `y` in the `mapping` of the 
+call to `ggplot`. As an example,
 
-# Case Studies
-## Regression
+```{r vis_1}
+ggplot(flights, aes(x = dep_delay, y = arr_delay)) + 
+  geom_point()
+```
+
+We might want to color the data points by the carrier
+
+```{r vis_2}
+ggplot(flights, aes(x = dep_delay, y = arr_delay, color = carrier)) + 
+  geom_point()
+```
+
+We can even combine plots with data manipulations connected through pipes:
+
+```{r vis_3}
+flights %>%
+  inner_join(weather) %>%
+  ggplot(aes(x = wind_dir, 
+             y = dep_delay,
+             color = origin)) + 
+  geom_point()
+```
+
+This is an interesting plot but hard to understand since the data from the 
+3 airports are plotted on top of each other. We might want to break those 
+apart by using what is called a facet or `facet_wrap()` in our plot building
+command. `facet_wrap()` takes as its first argument a one-sided formula that
+tells it which variable to use to construct the facets. For example,
+
+```{r vis_3}
+flights %>%
+  inner_join(weather) %>%
+  ggplot(aes(x = wind_dir, 
+             y = dep_delay,
+             color = origin)) + 
+  geom_point() + 
+  facet_wrap(~ origin)
+```
+
+We can also do things like putting in a smoother to show with the data:
+
+```{r vis_4}
+flights %>%
+  inner_join(weather) %>%
+  ggplot(aes(x = wind_dir, 
+             y = dep_delay,
+             color = origin)) + 
+  geom_smooth() + 
+  facet_wrap(~ origin)
+```
+
+We didn't pass the argument `method` in `geom_smooth()` and so it defaulted to 
+using a GAM smoother which is a locally-weighted smoother that performs well
+and fast on large data sets. For small data sets, it defaults to `loess` which
+is a similar idea as GAM but slower. You can also tell `geom_smooth()` what
+type of smoother to use (e.g., `lm` for linear model for a line-of-best-fit).
+
+You might think that the data is describing a circle - 360 and 0 degrees are
+the same direction - and wouldn't it be nice if the data was shown with 
+the x variable forming a circle? We can convert the data to be shown in a 
+polar coordinate system instead of an cartesian system by adding `coord_polar()`
+to the statemenet that builds the model:
+
+```{r vis_5}
+flights %>%
+  inner_join(weather) %>%
+  group_by(origin, wind_dir = round(wind_dir)) %>%
+  summarize(dep_delay = mean(dep_delay, na.rm = TRUE)) %>%
+  ggplot(aes(x = wind_dir, 
+             y = dep_delay,
+             color = origin)) + 
+  geom_point() + 
+  geom_path() + 
+  facet_wrap(~ origin) + 
+  coord_polar()
+```
+
+We can take the same graph and improve the labeling or change the theme as 
+well. The `labs()` argument is used to set the labels for the axis of the plot
+while there are a number of themes built-in such as `theme_bw()` or 
+`theme_minimal()`. Custom themes can be built with the `theme()` function and
+the package [`ggthemes`](https://cran.r-project.org/web/packages/ggthemes/vignettes/ggthemes.html)
+provides a variety of themes you might want to use. 
+
+```{r vis_6}
+flights %>%
+  inner_join(weather) %>%
+  group_by(origin, wind_dir = round(wind_dir)) %>%
+  summarize(dep_delay = mean(dep_delay, na.rm = TRUE)) %>%
+  ggplot(aes(x = wind_dir, 
+             y = dep_delay,
+             color = origin)) + 
+  geom_point() + 
+  geom_path() + 
+  facet_wrap(~ origin) + 
+  coord_polar() + 
+  labs(x = "Wind Direction", y = "Depature Delay")
+```
+
+You can even generate maps in `ggplot2` but this requires that you install
+the package `mapproj` as well. 
+
+```{r vis_7}
+ggplot(airports, aes(x = lon, y = lat)) + 
+  geom_point(size = 0.5) + 
+  borders() 
+```
+
+# Regression
 
 Regression is the main way in which we estimate the effect of some variable(s)
 $X$ on some outcome $y$. You've probably heard of linear regression (line of 
