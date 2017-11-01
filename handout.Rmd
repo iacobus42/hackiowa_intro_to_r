@@ -671,4 +671,62 @@ mean_speed_by_engine_type_and_number <- flights %>%
 mean_speed_by_engine_type_and_number
 ```
 
+# Examples
+## Regression
+
+Regression is the main way in which we estimate the effect of some variable(s)
+$X$ on some outcome $y$. You've probably heard of linear regression (line of 
+best fit). There are other methods known as generalized linear models (GLM)
+that are commonly used regression methods as well. These are used when the 
+response variable has special properties - such as being binary (yes/no, 
+disease/no disease) or counts. Aaron will talk about logistic regression 
+next week which is a case of GLM and he will use the `glm()` function. 
+The syntax does not vary according to the desired model in `glm()`, you just 
+change the desired family. 
+
+In R, a model is estimated by selecting the function we will use to do the 
+estimation (in this case `glm()`) and then providing a formula that describes
+the model.  Typically, inside a call to `glm()` you will use 2 or 3
+arguments. They are
+
+* formula (first) - the specification of the model you want to estimate. A 
+formula is written in the form `<response> ~ <x>` in the most 
+simple case. A more complicated model that includes several possible predictors
+is written as `<response> ~ <x1> + <x2> + ... + <xk>`. You can include 
+transformations in the formula (e.g., `log` or `sqrt`). R will process the 
+formula and build the model matrix (e.g., it handles construction of dummy 
+variables for you).
+* family (second) - the distribution of the response data. You'll probably 
+either leave this as the default `gaussian()` for classic linear models or 
+`binomial()` for binary response data. 
+* data (third) - the data set to use to estimate the model
+
+For example, we might want to know how the arrival delay is affected by the 
+deptuature delay. We would regress the arrival delay in `flights` on the 
+depature delay to decompose the arrival delay into the portion that is caused
+by depature delays and the portion caused by other factors. The data set 
+we would want to use is `flights`, the model would be `arr_delay ~ dep_delay`
+and we can leave the family as `guassian()`. The model building step would 
+look like:
+
+```{r regression_1}
+model <- glm(arr_delay ~ dep_delay, 
+             data = flights)
+```
+
+If we want to see a summary of the model fit with hypothesis tests, we would use
+the `summary()` function (`summary(x)` applied to nearly any object in R will
+produce a summary of `x` that varies based on what `x` is. In this case, 
+`x` is a model and so it provides a summary of the model fit but if `x` was a
+data.frame/tibble, it would provide a variable-by-variable summary including
+the min, 1st, 2nd, 3rd quartiles, mean and max.). 
+
+```{r regression_2}
+summary(model)
+```
+
+The `summary(model)` says that a flight that leaves on time arrives about 6
+minutes earlier that scheduled and that for each minute that the flight is 
+delayed compared to the scheduled depature time there is a 1.02 minute delay 
+on arrival. 
 
