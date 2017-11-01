@@ -89,14 +89,18 @@ a table or spreadsheet. The columns can be of different types.
 * "tibble" - a tibble (a corruption of the word "table" which was abberviated as
 "tbl" in the output) is an extension of the data.frame provided by the `tibble`
 package in the `tidyverse`. The main advantages of a tibble are a better print
-method and it makes it a little harder to get yourself in trouble. This is 
-the data object we will be using the most. 
+method and it makes it a little harder to get yourself in trouble. For more 
+on tibbles see [R for Data Science Chapter 10](http://r4ds.had.co.nz/tibbles.html).
 
 * "list" - a list is a collection of any R data types with each element being
 potentially a different type. These come in handy when doing functional 
-programming tasks. We'll cover lists when they come up in context. 
+programming tasks.
 
-## The Packages
+I am going to be mostly using tibble type objects here. We will touch briefly
+on lists towards the end if time permits. I'll mention vectors in a few places
+as they will be used next week. 
+
+## The Packages We'll Use Today
 I am going to cover using R, mostly focusing on data importation, manipulation
 and visualiation. I'll also cover the different data types in R, extensions of 
 these data types and, time permitting, some functional programming in R. Next
@@ -115,7 +119,7 @@ packages this week
 * `purrr`
 * `broom`
 
-## The Data 
+## The Data We'll Use Today
 We will be using the data sets in the `nycflights13` package. However, instead
 of using the package we are going to read in the data directly. We'll discuss
 reading in the data next, but first a brief overview of the data. The data is
@@ -132,7 +136,43 @@ There are five tables. They are
 * planes
 * weather
 
-The titles should be pretty straightword. 
+A sample schema showing how they are joined (taken from R4DS) 
+
+![Schema for Flights Data](http://r4ds.had.co.nz/diagrams/relational-nycflights.png)
+
+# Data Science Workflow
+The tidyverse suggests a workflow of data exploration and analysis depicited 
+in the figure below (taken from R for Data Science)
+
+![Idealized Data Science Workflow](http://r4ds.had.co.nz/diagrams/data-science-explore.png)
+
+The ideal is that you import your (potentially unstructured/messy) data, 
+tidy it (convert it into a cleaned, retangular format, more on tidy data later)
+and then enter the analysis/exploration cycle. Here you start by transforming 
+your data, visualizing relationships, modeling those relationships and then 
+potentially returning to the transformation and repeating the process. 
+Once you have finalized the model/completed the analysis, you communicate 
+your results. 
+
+The tidyverse package has a number of child packages that cover these tasks
+more-or-less in a 1:1 fashion:
+
+* `readr` covers many forms of data import into R
+* `tidyr` assists with tidying messy data and getting it into the desired 
+format
+* `dplyr` covers many, if not most, transformations of the data you might want 
+to do
+* `ggplot2` is a powerful and visually appealing tool for producing 
+visualzations of your data and any relationships within
+* `modelr`, `purrr` and the base R functions `lm()` and `glm()` form the bulk of
+the modeling stage
+* `knitr` provides an easy way to embedded R code and results inside Markdown 
+files for easy drafting of reports and communication 
+
+I will briefly cover the use of `readr` and `tidyr` today. I will cover 
+`dplyr` in-depth and provide an introduction to `ggplot2`. There won't be time
+to cover the regression and model methods in much detail without getting bogged
+down in the stats
 
 # Data Import
 Start a new R script in RStudio and add the following to the top of the script
@@ -305,6 +345,9 @@ spread(stocks_wide, stock, closing_price)
 These are handy little tools to keep in your tool kit. Moving from wide-to-long
 happens more than you'd expect. 
 
+For more on tidy data, its importance and how it works influences the 
+`tidyverse` see [R for Data Science Chapter 12](http://r4ds.had.co.nz/tidy-data.html).
+
 ## The `dplyr` Verbs
 
 `dplyr` is a workhorse package to manipulating and summarizing data. The most
@@ -363,6 +406,9 @@ as `match`
 `match`
 * `contains(match)` - returns any variables that contain the value `match`
 
+#### Exercises
+1. Arrange the data by the distance covered by the flight
+
 ### `filter()`
 
 `filter()` filters things. It takes as a first argument the name of the data
@@ -414,7 +460,19 @@ find the furtherest flight on May 27th using
 filter(flights, month == 5, day == 27, distance == max(distance, na.rm = TRUE))
 ```
 
-## `mutate()`
+#### Exercises
+
+From R for Data Science Chapter 5
+
+Find all flights that:
+
+1. Arrived 2 or more hours late
+2. Flew to DSM or OMA
+3. Operated by UA, AA or DL
+4. Arrived more than 2 hours late but didn't leave late
+5. Delayed in leaving by at least 1 hour but made up 30 hours in flight
+
+### `mutate()`
 `mutate` is used to add new variables to a tibble. As with the other verbs 
 so far, the first argument is the name of the tibble to mutate followed by a
 comma seperated list of variables and the values to assign to those variables. 
@@ -443,7 +501,9 @@ flights <- mutate(flights,
 select(flights, dep_delay, arr_delay)
 ```
 
-## `summarize()`
+#### 
+
+### `summarize()`
 `summarize()` takes as the first argument, you guessed it, the data object and
 the following arguments are in the same manner as with mutate. While `mutate()`
 must returns an $n$ row column, `summarize()` must return a 1 row column that
@@ -460,7 +520,7 @@ summarize(flights,
 The average flight arrives 6.9 minutes late with a standard deviation of 44.6 
 minutes. 
 
-* `arrange()`
+### `arrange()`
 `arrange()` is used to order data by a variable in the data. For instance, 
 if we wanted to order the `flights` table by the the depture time, we would
 run
@@ -471,7 +531,7 @@ arrange(flights, dep_time)
 
 and we get a bunch of flights that left at 00:01. 
 
-* `group_by()`
+### `group_by()`
 The major value of `dplyr` comes with the `group_by` function when combined with 
 the prior verbs. `group_by` modifies the prior verbs so that they operate on a 
 group basis. For instance, if we wanted the mean arrival delay by airline, 
@@ -522,7 +582,7 @@ filter(flights, distance == max(distance))
 Why is this 12,793 rows and not 16? Multiple flights for the same carrier have 
 the same distance (e.g., the same route appears several times). 
 
-# The Pipe Operator `%>%`
+## The Pipe Operator `%>%`
 This example is motivated/adapted from R for Data Science. 
 
 Imagine the following nursery rythm:
@@ -627,7 +687,7 @@ data analysis and manipulations are a linear flow from unstructed/messy data
 to rectangular data to tidy data to transformations to models, the concept of 
 "then" as a glue between the steps comes naturally. 
 
-# Joins
+## Joins
 
 Typically, data exists in several tables and we would like to merge the data
 together into a single table for our analysis. `dplyr` supports a number of 
@@ -671,7 +731,14 @@ mean_speed_by_engine_type_and_number <- flights %>%
 mean_speed_by_engine_type_and_number
 ```
 
-# Examples
+#### Exercises
+
+How might you find the average and median arrival delay by carrier? 
+
+# Visualization
+
+
+# Case Studies
 ## Regression
 
 Regression is the main way in which we estimate the effect of some variable(s)
@@ -730,3 +797,4 @@ minutes earlier that scheduled and that for each minute that the flight is
 delayed compared to the scheduled depature time there is a 1.02 minute delay 
 on arrival. 
 
+We can also imagine looking at if the flights that were delayed
