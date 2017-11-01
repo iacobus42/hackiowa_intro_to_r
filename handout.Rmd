@@ -1,8 +1,9 @@
 ---
 title: "Introduction to R"
 author: "Jacob Simmering"
-date: "October 30, 2017"
-output: html_document
+date: "Nov 1st, 2017"
+output:
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -175,6 +176,10 @@ to cover the regression and model methods in much detail without getting bogged
 down in the stats
 
 # Data Import
+
+For more information see 
+[Chapter 11 of R for Data Science](http://r4ds.had.co.nz/data-import.html)
+
 Start a new R script in RStudio and add the following to the top of the script
 
 ```{r eval=FALSE}
@@ -501,8 +506,6 @@ flights <- mutate(flights,
 select(flights, dep_delay, arr_delay)
 ```
 
-#### 
-
 ### `summarize()`
 `summarize()` takes as the first argument, you guessed it, the data object and
 the following arguments are in the same manner as with mutate. While `mutate()`
@@ -736,6 +739,10 @@ mean_speed_by_engine_type_and_number
 How might you find the average and median arrival delay by carrier? 
 
 # Visualization
+
+For more information see 
+[Chapter 3 of R for Data Science](http://r4ds.had.co.nz/data-visualisation.html)
+
 We are going to focus on using `ggplot2` for our plots. The basic use is to
 call the function `ggplot(data, mapping = aes())` where data is some 
 data object (e.g., tibble) and the mapping contains some of the aesthetics 
@@ -777,7 +784,7 @@ apart by using what is called a facet or `facet_wrap()` in our plot building
 command. `facet_wrap()` takes as its first argument a one-sided formula that
 tells it which variable to use to construct the facets. For example,
 
-```{r vis_3}
+```{r vis_3b}
 flights %>%
   inner_join(weather) %>%
   ggplot(aes(x = wind_dir, 
@@ -857,6 +864,8 @@ ggplot(airports, aes(x = lon, y = lat)) +
 ```
 
 # Regression
+For more information, see the 
+[Model Building Chapter in R for Data Science](http://r4ds.had.co.nz/model-building.html)
 
 Regression is the main way in which we estimate the effect of some variable(s)
 $X$ on some outcome $y$. You've probably heard of linear regression (line of 
@@ -914,4 +923,100 @@ minutes earlier that scheduled and that for each minute that the flight is
 delayed compared to the scheduled depature time there is a 1.02 minute delay 
 on arrival. 
 
-We can also imagine looking at if the flights that were delayed
+# Functional Programming (Probably Won't Get to)
+
+For more detail see [R for Data Science Chapter 25](http://r4ds.had.co.nz/many-models.html). 
+
+One of the most powerful things about the tidyverse is the ability do construct
+"list-columns" inside a tibble. There look like and behave like normal columns
+but instead of containing an atomic value, they contain a tibble. You construct
+these with the `nest()` command and the nesting is done by the groups of the 
+tibble. For instance, if I wanted to nest the data by airline and airport,
+I would
+
+```{r nest_1}
+nested_flights <- flights %>%
+  group_by(carrier, origin) %>% 
+  nest()
+nested_flights
+```
+
+Notice how `carrier` and `origin` are both columns of vectors but the new 
+variable `data` is a tibble. That tibble contains only the rows of data for that
+row's `carrier` and `origin` values.
+
+You can interact with that data using the `purrr` package. For instance, if
+we wanted to fit a model that predicted the probability of a plane leaving 
+late based on the number of flights out, the month, day-of-week, wind speed,
+hour and flight distance with a different model for each airline and airport
+we could do something like this:
+
+```{r nest_2}
+weather_and_time <- flights %>%
+  ungroup() %>%
+  inner_join(weather) %>%
+  select(carrier, origin, 
+         dep_delay,
+         year, month, day, hour,
+         wind_speed, distance)
+  
+number_of_flights <- flights %>%
+  group_by(origin, year, month, day, hour) %>%
+  summarize(number_of_flights_hour = n())
+  
+
+model_data <- inner_join(weather_and_time, number_of_flights) %>%
+    mutate(day_of_week = as.factor(lubridate::wday(lubridate::ymd(paste(year, month, day)))),
+         month = as.factor(month)) %>%
+  select(-year, -day)
+model_data
+
+model_data <- model_data %>%
+  group_by(carrier, origin) %>%
+  nest() %>%
+  filter(carrier %in% c("AA", "UA", "DL"))
+model_data
+
+model_data <- model_data %>%
+  mutate(model = purrr::map(data, ~ lm(dep_delay ~ ., data = .)))
+model_data
+```
+
+We now have a column named `model` that contains a series of 35 linear models. 
+We can see that these are models if we select the vector and print the first
+element:
+
+```{r}
+model_data$model[[1]]
+```
+
+We can use the `broom` package to extract the estimated coefficients of the 
+model and see if the different airlines have different sensitivies to the 
+number of flights out of the airport:
+
+```{r}
+sensitivity_to_congestion <- model_data %>%
+  mutate(sens_to_congestion = purrr::map(model, 
+                                         ~ broom::tidy(.) %>%
+                                           as_tibble() %>%
+                                           filter(term == "number_of_flights_hour") %>%
+                                           select(estimate))) %>%
+  select(carrier, origin, sens_to_congestion) %>%
+  unnest()
+sensitivity_to_congestion
+```
+
+And if we return to the `ggplot` section we can visualize this as
+
+```{r}
+ggplot(sensitivity_to_congestion, aes(x = origin, y = estimate, fill = carrier)) +
+  geom_bar(stat = "identity", position = "dodge") + 
+  labs(x = "Airport Code", y = "Added Delay Per 1 Additional Plane Leaving per Hour")
+```
+
+This structure can be helpful when estimating many models that are only slightly
+different or when doing something like cross-validation. There is an extension
+to the `dplyr` family called [`multidplyr`](https://github.com/hadley/multidplyr)
+that divides the data frame/tibble into shards and breaks the work across 
+several threads. This can be useful when you are fitting many models or doing
+several million rows data manipulations. 
